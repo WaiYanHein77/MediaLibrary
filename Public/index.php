@@ -1,64 +1,72 @@
-
 <?php
-/**
- * Main application entry point.
- * Initializes dependencies, services, and application routing.
- */
-/*
-//Report simple running errors
-error_reporting(E_ALL);
-//Make sure they are on screen
-ini_set('display_errors',1);
-//HTML formatted errors
-ini_set('html_errors',1);
-        OR
-use @ in front of error
-*/
-define('BASE_PATH', dirname(__DIR__));
 
+if (!defined('BASE_PATH')) {
+    define('BASE_PATH', dirname(__DIR__));
+}
+require_once BASE_PATH . '/Contract/CatalogRepositoryInterface.php';
+require_once BASE_PATH . '/Service/FormatService.php';
+require_once BASE_PATH . '/Contract/FormatRepositoryInterface.php';
 require_once BASE_PATH . '/vendor/autoload.php';
 require_once BASE_PATH . '/inc/Database.php';
 require_once BASE_PATH . '/inc/CustomPath.php';
-
+require_once BASE_PATH . '/Controller/api/ApiDetailsController.php';
+require_once BASE_PATH . '/Controller/api/ApiCatalogController.php';
+require_once BASE_PATH . '/Controller/api/ApiSuggestController.php';
 use Dotenv\Dotenv;
-$dotenv = Dotenv::createImmutable(dirname(__DIR__));
+
+$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
 $dotenv->load();
+/* =========================
+   INIT SERVICES
+========================= */
+$catalogService = new CatalogService();
+$formatService  = new FormatService();
 
-/*BUILD SHARED OBJECTS*/
-
-$db = Database::getConnection();
-
-/* Repositories */
-$catalogRepo = new CatalogRepository($db);
-$formatRepo  = new FormatRepository($db);
-
-/* Services */
-$catalogService = new CatalogService($catalogRepo);
-$formatService  = new FormatService($formatRepo);
-
-/*ROUTING */
-
+/* =========================
+   GET ROUTE
+========================= */
 $page = $_GET['page'] ?? 'home';
 
-switch ($page) {
+/* =========================
+   ROUTE MAP (CLEAN & DYNAMIC)
+========================= */
 
-    case 'details':
-        $controller = new DetailsController($catalogService);
-        $controller->show();
-        break;
+$routes = [
 
-    case 'suggest':
-        $controller = new SuggestController($formatService);
-        $controller->index();
-        break;
+    // MVC routes
+    'home' => [CatalogController::class, 'home', $catalogService],
+    'catalog' => [CatalogController::class, 'index', $catalogService],
+    'details' => [DetailsController::class, 'show', $catalogService],
+    'suggest' => [SuggestController::class, 'index', $formatService],
 
-    case 'catalog':
-        $controller = new CatalogController($catalogService);
-        $controller->index();
-        break;
+    // API routes
+    'api/catalog' => [ApiCatalogController::class, 'index', $catalogService],
+    'api/home' => [ApiCatalogController::class, 'home', $catalogService],
+    'api/details' => [ApiDetailsController::class, 'show', $catalogService],
+    'api/suggest' => [ApiSuggestController::class, 'submit', $formatService],
+];
 
-    default: // HOME PAGE
-        $controller = new CatalogController($catalogService);
-        $controller->home();
+/* =========================
+   EXECUTE ROUTE
+========================= */
+
+if (isset($routes[$page])) {
+
+    [$controllerClass, $method, $service] = $routes[$page];
+
+    $controller = new $controllerClass($service);
+    $controller->$method();
+
+    exit;
 }
 
+/* =========================
+   404 FALLBACK
+========================= */
+
+http_response_code(404);
+echo json_encode([
+    'success' => false,
+    'message' => 'Route not found'
+]);
+exit;

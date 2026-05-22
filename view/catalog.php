@@ -5,7 +5,7 @@
 
 		<h1>
 			<?php
-			if (!empty($search)) {
+			/*if (!empty($search)) {
 				echo 'Search results for "' . htmlspecialchars($search) . '"';
 
 				if (!empty($section)) {
@@ -17,11 +17,26 @@
 				}
 
 				echo htmlspecialchars($pageTitle);
-			}
+			}*/
+
+			$isSearching = !empty($search);
+			$hasSection  = !empty($section);
+
+			$title = $isSearching
+   			? 'Search results for "' . htmlspecialchars($search) . '"'
+    		: htmlspecialchars($pageTitle);
+
+				if ($hasSection) {
+				    $title .= $isSearching
+			        ? ' in ' . ucfirst($section)
+			        : " <a href='index.php?page=catalog'>Full Catalog</a> &gt; ";
+}
+
+echo $title;
 			?>
 		</h1>
 
-		<?php if ($total_items < 1): ?>
+		<?php if ($totalItems < 1): ?>
 
 			<?php if (!empty($section) && $found_in_full_catalog > 0): ?>
 

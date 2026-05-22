@@ -1,56 +1,31 @@
 <?php
 
-/**
- * Handles media suggestion requests,
- * form validation, and email sending.
- */
-
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once BASE_PATH . '/Controller/BaseController.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-class SuggestController
+class SuggestController extends BaseController
 {
     private FormatService $formatService;
 
     public function __construct(FormatService $formatService)
     {
-        // Inject format service dependency
         $this->formatService = $formatService;
     }
 
-    // Display suggestion form page
-    public function index()
-    {
-        $pageTitle = "Suggest a media item";
-        $section   = "suggest";
-        $hideSearch = true;
-
-        // Default form values
-        $name = $email = $category = $title = $format = $genre = $year = $details = null;
-        $error_message = null;
-
-        // Handle form submission
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $result = $this->handleForm();
-
-            // Extract returned form data
-            extract($result);
-        }
-
-        // Load dropdown data
-        $categories = $this->formatService->category_drop_down();
-        $formats    = $this->formatService->format_array();
-        $genres     = $this->formatService->genres_array();
-
-        require BASE_PATH . '/view/suggest.php';
-    }
-
-    // Process and validate form submission
-    private function handleForm(): array
+    /**
+     * Show suggestion form
+     */
+    public function index(): void
     {
         $data = [
+            'pageTitle' => 'Suggest a media item',
+            'section'   => 'suggest',
+            'hideSearch' => true,
+
+            // default form values
             'name' => null,
             'email' => null,
             'category' => null,
@@ -62,17 +37,39 @@ class SuggestController
             'error_message' => null
         ];
 
-        // Sanitize user input
-        $data['name']     = trim(filter_input(INPUT_POST, "name", FILTER_SANITIZE_SPECIAL_CHARS));
-        $data['email']    = trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL));
-        $data['category'] = trim(filter_input(INPUT_POST, "category", FILTER_SANITIZE_SPECIAL_CHARS));
-        $data['title']    = trim(filter_input(INPUT_POST, "title", FILTER_SANITIZE_SPECIAL_CHARS));
-        $data['format']   = trim(filter_input(INPUT_POST, "format", FILTER_SANITIZE_SPECIAL_CHARS));
-        $data['genre']    = trim(filter_input(INPUT_POST, "genre", FILTER_SANITIZE_SPECIAL_CHARS));
-        $data['year']     = trim(filter_input(INPUT_POST, "year", FILTER_SANITIZE_NUMBER_INT));
-        $data['details']  = trim(filter_input(INPUT_POST, "details", FILTER_SANITIZE_SPECIAL_CHARS));
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $result = $this->handleForm();
 
-        // Validate required fields
+            // merge POST result into view data
+            $data = array_merge($data, $result);
+        }
+
+        // dropdown data
+        $data['categories'] = $this->formatService->category_drop_down();
+        $data['formats']    = $this->formatService->format_array();
+        $data['genres']     = $this->formatService->genres_array();
+
+        $this->render('suggest', $data);
+    }
+
+    /**
+     * Handle form submission + email sending
+     */
+    private function handleForm(): array
+    {
+        $data = [
+            'name' => trim(filter_input(INPUT_POST, "name", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'email' => trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL)),
+            'category' => trim(filter_input(INPUT_POST, "category", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'title' => trim(filter_input(INPUT_POST, "title", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'format' => trim(filter_input(INPUT_POST, "format", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'genre' => trim(filter_input(INPUT_POST, "genre", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'year' => trim(filter_input(INPUT_POST, "year", FILTER_SANITIZE_NUMBER_INT)),
+            'details' => trim(filter_input(INPUT_POST, "details", FILTER_SANITIZE_SPECIAL_CHARS)),
+            'error_message' => null
+        ];
+
+        // required fields
         if (
             empty($data['name']) ||
             empty($data['email']) ||
@@ -85,19 +82,18 @@ class SuggestController
             return $data;
         }
 
-        // Honeypot spam protection
+        // honeypot
         if (!empty($_POST['address'])) {
             $data['error_message'] = "Bad form input";
             return $data;
         }
 
-        // Validate email format
+        // email validation
         if (!PHPMailer::validateAddress($data['email'])) {
             $data['error_message'] = "Invalid email address";
             return $data;
         }
-
-        /* SEND EMAIL */
+         /* SEND EMAIL */
 
         // Build email message body
         $email_body  = "Name: {$data['name']}\n";
@@ -112,12 +108,14 @@ class SuggestController
         // Configure PHPMailer
         $mail = new PHPMailer(true);
 
-        $mail->isSMTP();
-        $mail->Host = $_ENV['MAIL_HOST'];
-        $mail->Port = $_ENV['MAIL_PORT'];
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->SMTPAuth   = true;
+       $mail->isSMTP();
+$mail->Host       = $_ENV['MAIL_HOST'];
+$mail->SMTPAuth   = true;
+$mail->Username   = $_ENV['MAIL_USERNAME'];
+$mail->Password   = $_ENV['MAIL_PASSWORD'];
 
+$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // ✅ IMPORTANT
+$mail->Port       = 587;
         $mail->Username = $_ENV['MAIL_USERNAME'];
         $mail->Password = $_ENV['MAIL_PASSWORD'];
 

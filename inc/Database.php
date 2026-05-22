@@ -6,7 +6,7 @@ if (!defined('BASE_PATH')) {
 
 // browser path (for css, js, images)
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/ITVisionHub/media library');
+    define('BASE_URL', '/MediaLibrary-MVC-');
 }
 class Database
 {

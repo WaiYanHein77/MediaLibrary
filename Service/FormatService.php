@@ -4,6 +4,7 @@
  * Handles format-related business logic and manages
  * communication between controllers and repositories.
  */
+require_once BASE_PATH . '/Repository/FormatRepository.php';
 
 class FormatService
 {
