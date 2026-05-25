@@ -1,7 +1,9 @@
 <?php
 
-require_once BASE_PATH . '/Controller/BaseController.php';
-require_once BASE_PATH . '/Service/CatalogService.php';
+namespace Controller;
+
+use Service\CatalogService;
+use  Controller\BaseController;
 
 class CatalogController extends BaseController
 {

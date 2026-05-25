@@ -13,16 +13,29 @@ class ComposerStaticInitd0bf091f8f43ac0c4af44097b15683ea
     );
 
     public static $prefixLengthsPsr4 = array (
+        'V' =>
+        array (
+            'View\\' => 5,
+        ),
         'S' =>
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Service\\' => 8,
+        ),
+        'R' =>
+        array (
+            'Repository\\' => 11,
         ),
         'P' =>
         array (
             'PhpOption\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
+        ),
+        'I' =>
+        array (
+            'Inc\\' => 4,
         ),
         'G' =>
         array (
@@ -32,9 +45,18 @@ class ComposerStaticInitd0bf091f8f43ac0c4af44097b15683ea
         array (
             'Dotenv\\' => 7,
         ),
+        'C' =>
+        array (
+            'Controller\\' => 11,
+            'Contract\\' => 9,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'View\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/View',
+        ),
         'Symfony\\Polyfill\\Php80\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
@@ -47,6 +69,14 @@ class ComposerStaticInitd0bf091f8f43ac0c4af44097b15683ea
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
+        'Service\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/Service',
+        ),
+        'Repository\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/Repository',
+        ),
         'PhpOption\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
@@ -55,6 +85,10 @@ class ComposerStaticInitd0bf091f8f43ac0c4af44097b15683ea
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
+        'Inc\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/inc',
+        ),
         'GrahamCampbell\\ResultType\\' =>
         array (
             0 => __DIR__ . '/..' . '/graham-campbell/result-type/src',
@@ -62,6 +96,14 @@ class ComposerStaticInitd0bf091f8f43ac0c4af44097b15683ea
         'Dotenv\\' =>
         array (
             0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
+        ),
+        'Controller\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/Controller',
+        ),
+        'Contract\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/Contract',
         ),
     );
 

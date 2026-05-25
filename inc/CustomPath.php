@@ -1,4 +1,6 @@
 <?php
+namespace Inc;
+
 spl_autoload_register(function ($class) {
 
     $baseDir = dirname(__DIR__) . '/';

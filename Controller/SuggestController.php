@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
-require_once BASE_PATH . '/Controller/BaseController.php';
+namespace Controller;
 
+use Service\FormatService;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 

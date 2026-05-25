@@ -1,10 +1,20 @@
 <?php
 
+namespace Service;
+
+// use Repository\FormatRepository;
+use Contract\FormatRepositoryInterface;
+// use FormatRepository as GlobalFormatRepository;
+// use FormatRepositoryInterface as GlobalFormatRepositoryInterface;
+// use GlobalFormatRepositoryInterface as GlobalGlobalFormatRepositoryInterface;
+use Inc\Database;
+use Repository\FormatRepository;
+
 /**
  * Handles format-related business logic and manages
  * communication between controllers and repositories.
  */
-require_once BASE_PATH . '/Repository/FormatRepository.php';
+// require_once BASE_PATH . '/Repository/FormatRepository.php';
 
 class FormatService
 {

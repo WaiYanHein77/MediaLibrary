@@ -1,27 +1,36 @@
 <?php
 
-/**
- * Defines methods for retrieving catalog data
- * from the data source.
- */
+namespace Contract;
 
-interface CatalogRepositoryInterface
+use Contract\BaseRepositoryInterface;
+
+/*
+ Repository interface for catalog-related operations
+*/
+
+interface CatalogRepositoryInterface extends BaseRepositoryInterface
 {
-    // Get total catalog item count
-    public function getcatalog_count($category = null, $search = null);
+    /*
+     Get catalog items by category
+    */
+    public function getByCategory(
+        string $category,
+        ?int $limit = null,
+        int $offset = 0
+    ): array;
 
-    // Get complete catalog list
-    public function get_full_catalog($limit = null, $offset = 0);
+    /*
+     Search catalog items
+    */
+    public function search(
+        string $keyword,
+        ?string $category = null,
+        ?int $limit = null,
+        int $offset = 0
+    ): array;
 
-    // Get catalog items by category
-    public function get_category_catalog($category, $limit = null, $offset = 0);
-
-    // Search catalog items by keyword and category
-    public function get_search_catalog($search, $category = null, $limit = null, $offset = 0);
-
-    // Get random catalog items
-    public function get_random_catalog();
-
-    // Get a single catalog item by ID
-    public function get_single_item($id);
+    /*
+     Get random catalog items
+    */
+    public function getRandom(): array;
 }

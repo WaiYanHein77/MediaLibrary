@@ -1,62 +1,10 @@
 <?php
 
-/**
- * Handles catalog business logic and communicates
- * between controllers and the catalog repository.
- */
+namespace Service;
 
-/* class CatalogService
-{
-    private CatalogRepositoryInterface $repo;
-
-    public function __construct(?CatalogRepositoryInterface $repo = null)
-    {
-        // Create default repository if none is provided
-        if ($repo === null) {
-            $db = Database::getConnection();
-            $repo = new CatalogRepository($db);
-        }
-
-        $this->repo = $repo;
-    }
-
-    // Get total number of catalog items
-    public function get_catalog_count($category = null, $search = null)
-    {
-        return $this->repo->getcatalog_count($category, $search);
-    }
-
-    // Get all catalog items with pagination support
-    public function full_catalog_array($limit = null, $offset = 0)
-    {
-        return $this->repo->get_full_catalog($limit, $offset);
-    }
-
-    // Get catalog items by category
-    public function category_catalog_array($category, $limit = null, $offset = 0)
-    {
-        return $this->repo->get_category_catalog($category, $limit, $offset);
-    }
-
-    // Search catalog items by keyword and category
-    public function search_catalog_array($search, $category = null, $limit = null, $offset = 0)
-    {
-        return $this->repo->get_search_catalog($search, $category, $limit, $offset);
-    }
-
-    // Get random catalog items
-    public function random_catalog_array()
-    {
-        return $this->repo->get_random_catalog();
-    }
-
-    // Get a single catalog item by ID
-    public function single_item_array($id)
-    {
-        return $this->repo->get_single_item($id);
-    }
-} */
-require_once BASE_PATH . '/Repository/CatalogRepository.php';
+use Contract\CatalogRepositoryInterface;
+use Inc\Database as IncDatabase;
+use Repository\CatalogRepository;
 
 class CatalogService
 {
@@ -68,23 +16,18 @@ class CatalogService
         'music'
     ];
 
-    private CatalogRepository $repo;
+    private CatalogRepositoryInterface $repo;
 
-    public function __construct(
-        ?CatalogRepositoryInterface $repo = null
-    ) {
+    public function __construct(?CatalogRepositoryInterface $repo = null)
+    {
         if ($repo === null) {
-            $db = Database::getConnection();
-
+            $db = IncDatabase::getConnection();
             $repo = new CatalogRepository($db);
         }
 
         $this->repo = $repo;
     }
 
-    /* =========================================================
-     * MAIN METHOD
-     * ========================================================= */
     public function getCatalogPage(array $queryParams): array
     {
         $section = $this->getCategory($queryParams);
@@ -103,68 +46,47 @@ class CatalogService
         );
 
         return [
-    'catalog' => $catalog,
-    'section' => $section,
-    'search' => $search,
-    'currentPage' => $pagination['currentPage'],
-    'totalPages' => $pagination['totalPages'],
-    'pageTitle' => $this->buildPageTitle($section),
-
-    // ✅ ADD THESE (FIX FOR YOUR ERROR)
-    'totalItems' => $totalItems,
-    'found_in_full_catalog' => ($section === null && $search === null)
-];
+            'catalog' => $catalog,
+            'section' => $section,
+            'search' => $search,
+            'currentPage' => $pagination['currentPage'],
+            'totalPages' => $pagination['totalPages'],
+            'pageTitle' => $this->buildPageTitle($section),
+            'totalItems' => $totalItems,
+            'found_in_full_catalog' => ($section === null && $search === null)
+        ];
     }
 
-    /* =========================================================
-     * CATEGORY FILTER
-     * ========================================================= */
+    /* ================= CATEGORY ================= */
     private function getCategory(array $queryParams): ?string
     {
         $category = $queryParams['cat'] ?? null;
 
-        if (
-            $category !== null &&
-            in_array($category, self::ALLOWED_CATEGORIES, true)
-        ) {
+        if ($category && in_array($category, self::ALLOWED_CATEGORIES, true)) {
             return $category;
         }
 
         return null;
     }
 
-    /* =========================================================
-     * SEARCH FILTER
-     * ========================================================= */
+    /* ================= SEARCH ================= */
     private function getSearchTerm(array $queryParams): ?string
     {
         $search = trim($queryParams['s'] ?? '');
-
         return $search !== '' ? $search : null;
     }
 
-    /* =========================================================
-     * PAGE NUMBER
-     * ========================================================= */
+    /* ================= PAGE ================= */
     private function getCurrentPage(array $queryParams): int
     {
-        $page = filter_var(
-            $queryParams['pg'] ?? 1,
-            FILTER_VALIDATE_INT
-        );
-
+        $page = filter_var($queryParams['pg'] ?? 1, FILTER_VALIDATE_INT);
         return ($page === false || $page < 1) ? 1 : $page;
     }
 
-    /* =========================================================
-     * PAGINATION
-     * ========================================================= */
+    /* ================= PAGINATION ================= */
     private function buildPagination(int $totalItems, int $currentPage): array
     {
-        $totalPages = max(
-            1,
-            (int) ceil($totalItems / self::ITEMS_PER_PAGE)
-        );
+        $totalPages = max(1, (int) ceil($totalItems / self::ITEMS_PER_PAGE));
 
         if ($currentPage > $totalPages) {
             $currentPage = $totalPages;
@@ -180,59 +102,56 @@ class CatalogService
         ];
     }
 
-    /* =========================================================
-     * LOAD DATA (USES YOUR REPOSITORY)
-     * ========================================================= */
+    /* ================= LOAD DATA (FIXED) ================= */
     private function loadCatalogData(
         ?string $section,
         ?string $search,
         int $limit,
         int $offset
     ): array {
+        // SEARCH + CATEGORY
         if ($search !== null && $section !== null) {
-            return $this->repo->get_search_catalog($search, $section, $limit, $offset);
+            return $this->repo->search($search, $section, $limit, $offset);
         }
 
+        // ONLY SEARCH
         if ($search !== null) {
-            return $this->repo->get_search_catalog($search, null, $limit, $offset);
+            return $this->repo->search($search, null, $limit, $offset);
         }
 
+        // ONLY CATEGORY
         if ($section !== null) {
-            return $this->repo->get_category_catalog($section, $limit, $offset);
+            return $this->repo->getByCategory($section, $limit, $offset);
         }
 
-        return $this->repo->get_full_catalog($limit, $offset);
+        // FULL LIST
+        return $this->repo->getAll($limit, $offset);
     }
-    /* =========================================================
-     * PAGE TITLE
-     * ========================================================= */
+
+    /* ================= TITLE ================= */
     private function buildPageTitle(?string $section): string
     {
         return $section ? ucfirst($section) : "Full Catalog";
     }
 
-    /* =========================================================
-     * COUNT (FIXED - USE REPOSITORY METHOD)
-     * ========================================================= */
+    /* ================= COUNT (FIXED) ================= */
     private function get_catalog_count(?string $section, ?string $search): int
     {
-        return (int) $this->repo->getcatalog_count($section, $search);
+        return $this->repo->count([
+            'category' => $section,
+            'search' => $search
+        ]);
     }
 
-    /* =========================================================
-     * RANDOM ITEMS
-     * ========================================================= */
+    /* ================= RANDOM ================= */
     public function random_catalog_array(): array
     {
-        return $this->repo->get_random_catalog();
+        return $this->repo->getRandom();
     }
 
-    /* =========================================================
-     * SINGLE ITEM DETAIL
-     * =========================================================
-     */
+    /* ================= SINGLE ITEM ================= */
     public function single_item_array(int $id): ?array
     {
-        return $this->repo->get_single_item($id);
+        return $this->repo->getById($id);
     }
 }

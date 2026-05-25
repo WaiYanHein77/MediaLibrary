@@ -21,36 +21,76 @@
             </a>
         </h1>
 
-        <!-- NAVIGATION -->
-        <ul class="nav">
-            <li class="<?= ($section === 'books') ? 'on' : '' ?>">
-                <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=books">
-                    <img src="<?= BASE_URL ?>/img/book.png"> Books
-                </a>
-            </li>
+   <!-- NAVIGATION -->
+<ul class="nav">
 
-            <li class="<?= ($section === 'movies') ? 'on' : '' ?>">
-                <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=movies">
-                    <img src="<?= BASE_URL ?>/img/movie.png"> Movies
-                </a>
-            </li>
+    <li class="<?= ($section === 'books') ? 'on' : '' ?>">
+        <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=books">
+            <img src="<?= BASE_URL ?>/img/book.png"> Books
+        </a>
+    </li>
 
-            <li class="<?= ($section === 'music') ? 'on' : '' ?>">
-                <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=music">
-                    <img src="<?= BASE_URL ?>/img/music.png"> Music
-                </a>
-            </li>
+    <li class="<?= ($section === 'movies') ? 'on' : '' ?>">
+        <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=movies">
+            <img src="<?= BASE_URL ?>/img/movie.png"> Movies
+        </a>
+    </li>
 
-            <li class="<?= ($section === 'suggest') ? 'on' : '' ?>">
-                <a href="<?= BASE_URL ?>/Public/index.php?page=suggest">
-                    <img src="<?= BASE_URL ?>/img/suggestion.png"> Suggest
-                </a>
-            </li>
-        </ul>
+    <li class="<?= ($section === 'music') ? 'on' : '' ?>">
+        <a href="<?= BASE_URL ?>/Public/index.php?page=catalog&cat=music">
+            <img src="<?= BASE_URL ?>/img/music.png"> Music
+        </a>
+    </li>
+
+    <li class="<?= ($section === 'suggest') ? 'on' : '' ?>">
+        <a href="<?= BASE_URL ?>/Public/index.php?page=suggest">
+            <img src="<?= BASE_URL ?>/img/suggestion.png"> Suggest
+        </a>
+    </li>
+
+    <?php if (isset($_SESSION['user'])): ?>
+
+        <li>
+            <a href="#">
+                👤 <?= htmlspecialchars($_SESSION['user']['username']) ?>
+            </a>
+        </li>
+
+        <li>
+            <a href="<?= BASE_URL ?>/Public/index.php?page=logout">
+                Logout
+            </a>
+        </li>
+
+    <?php else: ?>
+
+        <li class="<?= ($section === 'login') ? 'on' : '' ?>">
+            <a href="<?= BASE_URL ?>/Public/index.php?page=login">
+                Login
+            </a>
+        </li>
+
+        <li class="<?= ($section === 'register') ? 'on' : '' ?>">
+            <a href="<?= BASE_URL ?>/Public/index.php?page=register">
+                Register
+            </a>
+        </li>
+
+    <?php endif; ?>
+
+</ul>
 
     </div>
 </header>
+<?php if (isset($_SESSION['user'])): ?>
 
+ 
+
+<?php else: ?>
+
+    
+
+<?php endif; ?>
 <!-- SEARCH BAR -->
  <?php if (empty($hideSearch)): ?>
 <div class="search">

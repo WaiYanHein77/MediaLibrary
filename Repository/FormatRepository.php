@@ -1,17 +1,26 @@
 <?php
 
-require_once BASE_PATH . '/Contract/FormatRepositoryInterface.php';
-require_once BASE_PATH . '/Repository/BaseRepository.php';
+namespace Repository;
+
+use PDO;
+use Contract\FormatRepositoryInterface;
 
 class FormatRepository extends BaseRepository implements FormatRepositoryInterface
 {
-    // Formats by category
+    /*
+     * FORMAT DROPDOWN
+     */
     public function get_format_drop_down($category = null)
     {
-        $stmt = $this->execute(
-            "CALL sp_get_formats_by_category(:category)",
-            [':category' => $category ?: null]
+        $stmt = $this->db->prepare("CALL sp_get_formats_by_category(:category)");
+
+        $stmt->bindValue(
+            ':category',
+            $category,
+            $category === null ? PDO::PARAM_NULL : PDO::PARAM_STR
         );
+
+        $stmt->execute();
 
         $format = [];
 
@@ -24,25 +33,40 @@ class FormatRepository extends BaseRepository implements FormatRepositoryInterfa
         return $format;
     }
 
-    // Categories list
+    /*
+     * CATEGORY DROPDOWN
+     */
     public function get_category_drop_down()
     {
-        $stmt = $this->db->prepare(
-            "SELECT DISTINCT category FROM view_catalog ORDER BY category"
-        );
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT category 
+            FROM view_catalog 
+            ORDER BY category
+        ");
 
         $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $categories = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $stmt->closeCursor();
+
+        return $categories;
     }
 
-    // Genres by category
+    /*
+     * GENRE DROPDOWN
+     */
     public function get_genres_drop_down($category = null)
     {
-        $stmt = $this->execute(
-            "CALL sp_get_genres_by_category(:category)",
-            [':category' => $category ?: null]
+        $stmt = $this->db->prepare("CALL sp_get_genres_by_category(:category)");
+
+        $stmt->bindValue(
+            ':category',
+            $category,
+            $category === null ? PDO::PARAM_NULL : PDO::PARAM_STR
         );
+
+        $stmt->execute();
 
         $genre = [];
 

@@ -1,6 +1,12 @@
 <?php
 
-abstract class BaseRepository
+namespace Repository;
+
+use PDO;
+use Contract\BaseRepositoryInterface;
+
+
+abstract class BaseRepository implements BaseRepositoryInterface
 {
     protected PDO $db;
 
@@ -8,30 +14,78 @@ abstract class BaseRepository
     {
         $this->db = $db;
     }
-
-    /**
-     * Execute stored procedure or SQL with parameters
-     */
-    protected function execute(string $sql, array $params = []): PDOStatement
+    public function count(array $filters = []): int
     {
-        $stmt = $this->db->prepare($sql);
+        $category = $filters['category'] ?? null;
+        $search = $filters['search'] ?? null;
 
-        foreach ($params as $key => $value) {
-            $type = match (true) {
-                is_null($value) => PDO::PARAM_NULL,
-                is_int($value) => PDO::PARAM_INT,
-                default => PDO::PARAM_STR,
-            };
+        $stmt = $this->db->prepare("CALL sp_search_catalog_count(:search, :category)");
 
-            // named or positional support
-            if (is_int($key)) {
-                $stmt->bindValue($key + 1, $value, $type);
-            } else {
-                $stmt->bindValue($key, $value, $type);
-            }
-        }
+        $stmt->bindValue(':search', $search ?: null, $search ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $stmt->bindValue(':category', $category ?: null, $category ? PDO::PARAM_STR : PDO::PARAM_NULL);
 
         $stmt->execute();
-        return $stmt;
+
+        $count = (int)$stmt->fetchColumn();
+
+        $stmt->nextRowset();
+        $stmt->closeCursor();
+
+        return $count;
+    }
+
+    /*
+     * GET ALL (BaseRepositoryInterface)
+     */
+    public function getAll($limit = null, $offset = 0)
+    {
+        $result = $this->db->prepare(" CALL sp_get_full_catalog ( ? , ? )");
+
+        $result->bindParam(
+            1,
+            $limit,
+            $limit === null ? PDO::PARAM_NULL : PDO::PARAM_INT
+        );
+
+        $result->bindParam(2, $offset, PDO::PARAM_INT);
+
+        $result->execute();
+
+        $catalog = $result->fetchAll();
+
+        $result->closeCursor();
+
+        return $catalog;
+    }
+
+    /*
+     * GET BY ID (BaseRepositoryInterface)
+     */
+    public function getById($id)
+    {
+        $result = $this->db->prepare("CALL sp_get_item_full_detail (?)");
+
+        $result->bindParam(1, $id, PDO::PARAM_INT);
+
+        $result->execute();
+
+        $item = $result->fetch(PDO::FETCH_ASSOC);
+
+        // Return null if item does not exist
+        if ($item === false) {
+            $result->closeCursor();
+            return null;
+        }
+
+        $result->nextRowset();
+
+        // Load related people data (actors, authors, etc.)
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+            $item[strtolower($row['role'])][] = $row['fullname'];
+        }
+
+        $result->closeCursor();
+
+        return $item;
     }
 }
