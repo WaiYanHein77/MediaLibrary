@@ -1,8 +1,8 @@
 <?php
 
-namespace Contract;
+namespace App\Contract;
 
-use Contract\BaseRepositoryInterface;
+use App\Contract\BaseRepositoryInterface;
 
 /*
  Repository interface for catalog-related operations

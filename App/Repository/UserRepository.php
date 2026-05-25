@@ -1,8 +1,8 @@
 <?php
 
-namespace Repository;
+namespace App\Repository;
 
-use Contract\UserRepositoryInterface;
+use App\Contract\UserRepositoryInterface;
 use PDO;
 
 

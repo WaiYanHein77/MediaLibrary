@@ -1,17 +1,14 @@
 <?php
-namespace Service;
+namespace App\Service;
 
-use Contract\UserRepositoryInterface;
-use Repository\UserRepository;
-use Inc\Database as IncDatabase;
+use App\Contract\UserRepositoryInterface;
+use App\Repository\UserRepository;
+use App\Inc\Database as IncDatabase;
 class UserService
 {
     private UserRepositoryInterface $userRepo;
 
-    // public function __construct(UserRepositoryInterface $userRepo)
-    // {
-    //     $this->userRepo = $userRepo;
-    // }
+    
     public function __construct(
         UserRepositoryInterface $userRepo
     ) {

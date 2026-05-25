@@ -1,8 +1,8 @@
 <?php
 
-namespace Controller\Api;
+namespace App\Controller\Api;
 
-use Service\UserService;
+use App\Service\UserService;
 
 class ApiUserController
 {

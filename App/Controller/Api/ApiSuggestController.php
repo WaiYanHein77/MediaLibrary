@@ -1,7 +1,7 @@
 <?php
-namespace Controller\Api;
+namespace App\Controller\Api;
 
-use FormatService;
+use App\Service\FormatService;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 

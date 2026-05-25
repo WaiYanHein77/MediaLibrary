@@ -1,9 +1,9 @@
 <?php
 
-namespace Repository;
+namespace App\Repository;
 
 use PDO;
-use Contract\FormatRepositoryInterface;
+use App\Contract\FormatRepositoryInterface;
 
 class FormatRepository extends BaseRepository implements FormatRepositoryInterface
 {

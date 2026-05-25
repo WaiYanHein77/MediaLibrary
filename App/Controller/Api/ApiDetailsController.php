@@ -1,10 +1,10 @@
 <?php
-namespace Controller\Api;
+namespace App\Controller\Api;
 
 use Exception;
-use Service\CatalogService;
+use App\Service\CatalogService;
 
-// require_once BASE_PATH . '/Service/CatalogService.php';
+
 
 class ApiDetailsController
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Controller;
+namespace App\Controller;
 
-use Service\CatalogService;
-use  Controller\BaseController;
+use App\Service\CatalogService;
+use App\Controller\BaseController;
 
 class CatalogController extends BaseController
 {

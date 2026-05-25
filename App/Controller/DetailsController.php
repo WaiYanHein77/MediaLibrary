@@ -1,8 +1,8 @@
 <?php
 
-namespace Controller;
+namespace App\Controller;
 
-use Service\CatalogService;
+use App\Service\CatalogService;
 
 class DetailsController extends BaseController
 {

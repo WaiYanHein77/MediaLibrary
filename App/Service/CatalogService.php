@@ -1,10 +1,10 @@
 <?php
 
-namespace Service;
+namespace App\Service;
 
-use Contract\CatalogRepositoryInterface;
-use Inc\Database as IncDatabase;
-use Repository\CatalogRepository;
+use App\Contract\CatalogRepositoryInterface;
+use App\Inc\Database as IncDatabase;
+use App\Repository\CatalogRepository;
 
 class CatalogService
 {

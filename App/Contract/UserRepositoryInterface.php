@@ -1,6 +1,6 @@
 <?php
 
-namespace Contract;
+namespace App\Contract;
 
 /**
  * Defines methods for user data access.

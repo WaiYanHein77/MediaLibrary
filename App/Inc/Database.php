@@ -1,5 +1,5 @@
 <?php
-namespace Inc;
+namespace App\Inc;
 
 use PDO;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace Repository;
+namespace App\Repository;
 
 use PDO;
-use Contract\BaseRepositoryInterface;
+use App\Contract\BaseRepositoryInterface;
 
 
 abstract class BaseRepository implements BaseRepositoryInterface

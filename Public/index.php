@@ -1,92 +1,87 @@
 <?php
+
 session_start();
-if (!defined('BASE_PATH')) {
-    define('BASE_PATH', dirname(__DIR__));
-}
+
+define('BASE_PATH', dirname(__DIR__));
+
 require_once BASE_PATH . '/vendor/autoload.php';
+require_once BASE_PATH . '/view/ItemView.php';
 
 use Dotenv\Dotenv;
+use App\Inc\Database;
+use App\Service\CatalogService;
+use App\Service\FormatService;
+use App\Service\UserService;
+use App\Repository\UserRepository;
 
-use Service\CatalogService;
-use Service\FormatService;
-use Service\UserService;
+/* =========================
+   ENV
+========================= */
 
-use Controller\CatalogController;
-use Controller\DetailsController;
-use Controller\SuggestController;
-use Controller\UserController;
-
-use Controller\Api\ApiCatalogController;
-use Controller\Api\ApiDetailsController;
-use Controller\Api\ApiSuggestController;
-use Controller\Api\ApiUserController;
-
-use Inc\Database;
-use Repository\UserRepository;
-
-
-$dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv = Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
 
-// STEP 1: DB CONNECTION
+/* =========================
+   DB
+========================= */
+
 $db = Database::getConnection();
 
-// STEP 2: CREATE OBJECTS IN CORRECT ORDER
+/* =========================
+   SERVICES
+========================= */
 
-/* Catalog */
 $catalogService = new CatalogService();
 $formatService  = new FormatService();
 
-$userrepo=new UserRepository($db);
-$userService=new UserService($userrepo);
+$userRepo    = new UserRepository($db);
+$userService = new UserService($userRepo);
 
 /* =========================
-   GET ROUTE
+   LOAD ROUTES
 ========================= */
+
+$webRoutes = require BASE_PATH . '/routes/web.php';
+$apiRoutes = require BASE_PATH . '/routes/api.php';
+
+$routes = $webRoutes + $apiRoutes;
+
+/* =========================
+   DISPATCH
+========================= */
+
 $page = $_GET['page'] ?? 'home';
-
-/* =========================
-   ROUTE MAP (CLEAN & DYNAMIC)
-========================= */
-
-$routes = [
-
-    // MVC routes
-    'home' => [CatalogController::class, 'home', $catalogService],
-    'catalog' => [CatalogController::class, 'index', $catalogService],
-    'details' => [DetailsController::class, 'show', $catalogService],
-    'suggest' => [SuggestController::class, 'index', $formatService],
-
-      // USER AUTH
-    'login' => [UserController::class, 'login', $userService],
-    'register' => [UserController::class, 'register', $userService],
-    'logout' => [UserController::class, 'logout', $userService],
-
-    // API routes
-    'api/catalog' => [ApiCatalogController::class, 'index', $catalogService],
-    'api/home' => [ApiCatalogController::class, 'home', $catalogService],
-    'api/details' => [ApiDetailsController::class, 'show', $catalogService],
-    'api/suggest' => [ApiSuggestController::class, 'submit', $formatService],
-
-     // USER API
-    'api/login' => [ApiUserController::class, 'login', $userService],
-    'api/register' => [ApiUserController::class, 'register', $userService],
-    'api/logout' => [ApiUserController::class, 'logout', $userService],
-
-];
-
-/* =========================
-   EXECUTE ROUTE
-========================= */
 
 if (isset($routes[$page])) {
 
-    [$controllerClass, $method, $service] = $routes[$page];
+    [$controllerClass, $method] = $routes[$page];
 
-    $controller = new $controllerClass($service);
+    // inject correct service automatically
+    $service = match ($controllerClass) {
+        App\Controller\CatalogController::class,
+        App\Controller\Api\ApiCatalogController::class
+            => $catalogService,
+
+        App\Controller\DetailsController::class,
+        App\Controller\Api\ApiDetailsController::class
+            => $catalogService,
+
+        App\Controller\SuggestController::class,
+        App\Controller\Api\ApiSuggestController::class
+            => $formatService,
+
+        App\Controller\UserController::class,
+        App\Controller\Api\ApiUserController::class
+            => $userService,
+
+        default => null
+    };
+
+    $controller = $service
+        ? new $controllerClass($service)
+        : new $controllerClass();
 
     $controller->$method();
-
     exit;
 }
 
@@ -100,5 +95,3 @@ echo json_encode([
     'success' => false,
     'message' => 'Route not found'
 ]);
-
-exit;

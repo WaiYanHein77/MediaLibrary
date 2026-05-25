@@ -1,6 +1,6 @@
 <?php
 
-namespace Contract;
+namespace App\Contract;
 /*
  Base interface for all repository classes
  Provides common data access methods
