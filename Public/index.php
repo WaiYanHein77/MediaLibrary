@@ -13,7 +13,7 @@ use App\Service\CatalogService;
 use App\Service\FormatService;
 use App\Service\UserService;
 use App\Repository\UserRepository;
-
+use App\Service\Validator;
 /* =========================
    ENV
 ========================= */
@@ -34,9 +34,9 @@ $db = Database::getConnection();
 $catalogService = new CatalogService();
 $formatService  = new FormatService();
 
+$validator = new Validator();
 $userRepo    = new UserRepository($db);
-$userService = new UserService($userRepo);
-
+$userService = new UserService($userRepo, $validator);
 /* =========================
    LOAD ROUTES
 ========================= */

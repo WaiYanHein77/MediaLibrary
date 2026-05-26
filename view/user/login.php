@@ -1,3 +1,8 @@
+<?php require BASE_PATH . '/view/layout/header.php'; ?>
+
+<?php $errors = $errors ?? []; ?>
+<?php $old = $old ?? []; ?>
+
 <style>
 .auth-form {
     width: 340px;
@@ -29,11 +34,13 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    outline: none;
 }
 
-.form-group input:focus {
-    border-color: #ef7d7d;
+small.error {
+    color: red;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
 }
 
 .auth-form button {
@@ -43,8 +50,6 @@
     color: white;
     border: none;
     border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
 }
 
 .auth-form button:hover {
@@ -55,25 +60,37 @@
     text-align: center;
     margin-top: 12px;
 }
-
-.auth-link a {
-    color: #2d6cdf;
-    text-decoration: none;
-}
 </style>
-<?php require BASE_PATH . '/view/layout/header.php'; ?>
 
 <form method="POST" class="auth-form">
+
     <h2>Login</h2>
 
+    <!-- Email -->
     <div class="form-group">
         <label>Email</label>
-        <input type="email" name="email" placeholder="Enter your email" required>
+        <input type="email" name="email"
+            value="<?= htmlspecialchars($old['email'] ?? '') ?>"
+            placeholder="Enter your email">
+
+        <?php if (!empty($errors['email'])): ?>
+            <small class="error">
+                <?= implode('<br>', $errors['email']) ?>
+            </small>
+        <?php endif; ?>
     </div>
 
+    <!-- Password -->
     <div class="form-group">
         <label>Password</label>
-        <input type="password" name="password" placeholder="Enter your password" required>
+        <input type="password" name="password"
+            placeholder="Enter your password">
+
+        <?php if (!empty($errors['password'])): ?>
+            <small class="error">
+                <?= implode('<br>', $errors['password']) ?>
+            </small>
+        <?php endif; ?>
     </div>
 
     <button type="submit">Login</button>
@@ -82,5 +99,7 @@
         Don't have an account?
         <a href="index.php?page=register">Register</a>
     </p>
+
 </form>
+
 <?php require BASE_PATH . '/view/layout/footer.php'; ?>
