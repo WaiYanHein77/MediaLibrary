@@ -39,7 +39,7 @@
 .auth-form button {
     width: 100%;
     padding: 10px;
-    background: #28a745;
+    background: #ef7d7d;
     color: white;
     border: none;
     border-radius: 6px;
@@ -61,7 +61,7 @@
     text-decoration: none;
 }
 </style>
-
+<?php require BASE_PATH . '/view/layout/header.php'; ?>
 <form method="POST" class="auth-form">
     <h2>Register</h2>
 
@@ -87,3 +87,4 @@
         <a href="index.php?page=login">Login</a>
     </p>
 </form>
+<?php require BASE_PATH . '/view/layout/footer.php'; ?>

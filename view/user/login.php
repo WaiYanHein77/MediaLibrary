@@ -33,13 +33,13 @@
 }
 
 .form-group input:focus {
-    border-color: #2d6cdf;
+    border-color: #ef7d7d;
 }
 
 .auth-form button {
     width: 100%;
     padding: 10px;
-    background: #2d6cdf;
+    background: #ef7d7d;
     color: white;
     border: none;
     border-radius: 6px;
@@ -48,7 +48,7 @@
 }
 
 .auth-form button:hover {
-    background: #1b4fb3;
+    background: #1e7e34;
 }
 
 .auth-link {
@@ -61,6 +61,7 @@
     text-decoration: none;
 }
 </style>
+<?php require BASE_PATH . '/view/layout/header.php'; ?>
 
 <form method="POST" class="auth-form">
     <h2>Login</h2>
@@ -82,3 +83,4 @@
         <a href="index.php?page=register">Register</a>
     </p>
 </form>
+<?php require BASE_PATH . '/view/layout/footer.php'; ?>

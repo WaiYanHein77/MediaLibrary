@@ -3,45 +3,93 @@
 namespace App\Repository;
 
 use App\Contract\UserRepositoryInterface;
+
 use PDO;
 
-
-class UserRepository extends BaseRepository implements UserRepositoryInterface
+class UserRepository extends BaseRepository
+implements UserRepositoryInterface
 {
-    protected PDO $db;
+    /*
+     * TABLE CONFIGURATION
+     */
+    protected string $table = 'users';
 
-    public function __construct(PDO $db)
-    {
-        $this->db = $db;
-    }
+    protected string $primaryKey = 'id';
 
-    public function createUser(string $username, string $email, string $password): bool
-    {
-        $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
+
+    /*
+     * CREATE USER
+     */
+    public function createUser(
+        string $username,
+        string $email,
+        string $password
+    ): bool {
+
+        $sql = "
+            INSERT INTO users (
+                username,
+                email,
+                password
+            )
+            VALUES (
+                :username,
+                :email,
+                :password
+            )
+        ";
+
         $stmt = $this->db->prepare($sql);
 
-        return $stmt->execute([
+        $success = $stmt->execute([
             ':username' => $username,
             ':email' => $email,
             ':password' => $password
         ]);
+
+        $stmt->closeCursor();
+
+        return $success;
     }
 
-    public function findByEmail(string $email)
-    {
-        $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':email' => $email]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    /*
+     * FIND BY EMAIL
+     */
+    public function findByEmail(
+        string $email
+    ) {
+
+        $stmt = $this->db->prepare(
+            "
+            SELECT *
+            FROM {$this->table}
+            WHERE email = :email
+            LIMIT 1
+            "
+        );
+
+        $stmt->execute([
+            ':email' => $email
+        ]);
+
+        $user = $stmt->fetch(
+            PDO::FETCH_ASSOC
+        );
+
+        $stmt->closeCursor();
+
+        return $user ?: null;
     }
 
-    public function findById(int $id)
-    {
-        $sql = "SELECT * FROM users WHERE id = :id";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':id' => $id]);
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    /*
+     * getById()
+     * inherited from BaseRepository
+     *
+     * getAll()
+     * inherited from BaseRepository
+     *
+     * count()
+     * inherited from BaseRepository
+     */
 }
