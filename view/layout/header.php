@@ -57,7 +57,7 @@
                             </a>
                         </li>
 
-                        <?php if (isset($_SESSION['user'])): ?>
+                        <?php if (!empty($_SESSION['user']) && !empty($_SESSION['user']['username'])): ?>
 
                             <li>
                                 <a href="#">

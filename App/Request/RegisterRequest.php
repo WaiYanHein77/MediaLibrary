@@ -25,6 +25,11 @@ class RegisterRequest extends FormRequest
                 'required' => true,
                 'min' => 6,
                 'max' => 255
+            ],
+
+            'confirm_password' => [
+                'required' => true,
+                'same' => 'password'
             ]
 
         ];

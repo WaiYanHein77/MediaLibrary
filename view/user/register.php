@@ -49,6 +49,19 @@ require BASE_PATH . '/view/layout/header.php';
         <?php endif; ?>
     </div>
 
+     <!-- Confirm Password -->
+    <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password"
+            placeholder="Confirm password">
+
+        <?php if (!empty($errors['confirm_password'])): ?>
+            <small class="error">
+                <?= implode('<br>', $errors['confirm_password']) ?>
+            </small>
+        <?php endif; ?>
+    </div>
+
     <button type="submit">Create Account</button>
 
     <p class="auth-link">

@@ -80,6 +80,20 @@ class Validator
                     "Invalid email";
             }
 
+            /*
+             same field validation (confirm password)
+            */
+            if (isset($fieldRules['same'])) {
+
+                $otherField = $fieldRules['same'];
+                $otherValue = trim($data[$otherField] ?? '');
+
+                if ($value !== $otherValue) {
+                    $this->errors[$field][] =
+                        ucfirst($field) . " must match " . $otherField;
+                }
+            }
+
         }
 
         return empty($this->errors);
