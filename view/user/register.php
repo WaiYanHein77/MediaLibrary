@@ -1,75 +1,7 @@
-<style>
-.auth-form {
-    width: 340px;
-    margin: 60px auto;
-    padding: 25px;
-    border-radius: 10px;
-    background: #ffffff;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    font-family: Arial, sans-serif;
-}
-
-.auth-form h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    outline: none;
-}
-
-.form-group input:focus {
-    border-color: #2d6cdf;
-}
-
-small.error {
-    color: red;
-    font-size: 12px;
-    display: block;
-    margin-top: 5px;
-}
-
-.auth-form button {
-    width: 100%;
-    padding: 10px;
-    background: #ef7d7d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.auth-form button:hover {
-    background: #1e7e34;
-}
-
-.auth-link {
-    text-align: center;
-    margin-top: 12px;
-}
-
-.auth-link a {
-    color: #2d6cdf;
-    text-decoration: none;
-}
-</style>
-
-<?php require BASE_PATH . '/view/layout/header.php'; ?>
+<?php
+$section = 'register';
+require BASE_PATH . '/view/layout/header.php';
+?>
 <?php $errors = $errors ?? []; ?>
 
 <form method="POST" class="auth-form">

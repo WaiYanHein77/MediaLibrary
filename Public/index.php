@@ -14,6 +14,8 @@ use App\Service\FormatService;
 use App\Service\UserService;
 use App\Repository\UserRepository;
 use App\Service\Validator;
+use App\Request\RegisterRequest;
+use App\Request\LoginRequest;
 /* =========================
    ENV
 ========================= */
@@ -52,6 +54,7 @@ $routes = $webRoutes + $apiRoutes;
 
 $page = $_GET['page'] ?? 'home';
 
+
 if (isset($routes[$page])) {
 
     [$controllerClass, $method] = $routes[$page];
@@ -60,19 +63,19 @@ if (isset($routes[$page])) {
     $service = match ($controllerClass) {
         App\Controller\CatalogController::class,
         App\Controller\Api\ApiCatalogController::class
-            => $catalogService,
+        => $catalogService,
 
         App\Controller\DetailsController::class,
         App\Controller\Api\ApiDetailsController::class
-            => $catalogService,
+        => $catalogService,
 
         App\Controller\SuggestController::class,
         App\Controller\Api\ApiSuggestController::class
-            => $formatService,
+        => $formatService,
 
         App\Controller\UserController::class,
         App\Controller\Api\ApiUserController::class
-            => $userService,
+        => $userService,
 
         default => null
     };
@@ -81,7 +84,34 @@ if (isset($routes[$page])) {
         ? new $controllerClass($service)
         : new $controllerClass();
 
-    $controller->$method();
+    $request = null;
+
+    if (
+        $controllerClass === App\Controller\UserController::class
+    ) {
+
+        $request = match ($method) {
+
+            'register' =>
+            new RegisterRequest(),
+
+            'login' =>
+            new LoginRequest(),
+
+            default => null
+        };
+    }
+
+    if ($request) {
+
+        $controller->$method(
+            $request
+        );
+    } else {
+
+        $controller->$method();
+    }
+
     exit;
 }
 
