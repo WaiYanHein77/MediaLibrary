@@ -93,7 +93,7 @@ class SuggestController extends BaseController
             $data['error_message'] = "Invalid email address";
             return $data;
         }
-         /* SEND EMAIL */
+        /* SEND EMAIL */
 
         // Build email message body
         $email_body  = "Name: {$data['name']}\n";
@@ -108,14 +108,23 @@ class SuggestController extends BaseController
         // Configure PHPMailer
         $mail = new PHPMailer(true);
 
-       $mail->isSMTP();
-$mail->Host       = $_ENV['MAIL_HOST'];
-$mail->SMTPAuth   = true;
-$mail->Username   = $_ENV['MAIL_USERNAME'];
-$mail->Password   = $_ENV['MAIL_PASSWORD'];
+        $mail->isSMTP();
+        $mail->Host       = $_ENV['MAIL_HOST'];
+        $mail->SMTPAuth   = true;
+        $mail->Username   = $_ENV['MAIL_USERNAME'];
+        $mail->Password   = $_ENV['MAIL_PASSWORD'];
 
-$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // ✅ IMPORTANT
-$mail->Port       = 587;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ],
+        ];
+
         $mail->Username = $_ENV['MAIL_USERNAME'];
         $mail->Password = $_ENV['MAIL_PASSWORD'];
 

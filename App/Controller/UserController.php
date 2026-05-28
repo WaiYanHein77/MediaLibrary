@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Service\UserService;
 use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
+use App\Service\UserService;
 
 class UserController
 {
@@ -12,126 +12,70 @@ class UserController
         private UserService $userService
     ) {}
 
-    public function register(
-        RegisterRequest $request
-    ) {
-
+    public function register(RegisterRequest $request)
+    {
         $errors = [];
 
-        if (
-            $_SERVER['REQUEST_METHOD']
-            === 'POST'
-        ) {
-//  echo "<pre>";
-//         var_dump($_POST);
-//         echo "</pre>";
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-//         $isValid = $request->validate($_POST);
-
-//         echo "<pre>";
-//         var_dump($isValid);
-//         echo "</pre>";
-
-//         echo "<pre>";
-//         var_dump($request->errors());
-//         echo "</pre>";
-
-//         exit; // stop execution for debugging
-            if (
-                !$request->validate($_POST)
-            ) {
-
-                $errors =
-                    $request->errors();
-
+            if (!$request->validate($_POST)) {
+                $errors = $request->errors();
             } else {
 
-                $result =
-                    $this->userService
-                    ->register($_POST);
+                $dto = $request->toDTO($_POST);
 
-                if (
-                    $result['success']
-                ) {
+                $result = $this->userService->register($dto);
 
-                    header(
-                        "Location:index.php?page=login"
-                    );
-
+                if ($result->isSuccess()) {
+                    header("Location: index.php?page=login");
                     exit;
                 }
 
-                $errors =
-                    $result['errors']
-                    ?? [];
+                $errors = $result->errors();
             }
         }
 
-        require BASE_PATH
-            . '/view/user/register.php';
+        require BASE_PATH . '/view/user/register.php';
     }
 
-    public function login(
-        LoginRequest $request
-    ) {
-
+    public function login(LoginRequest $request)
+    {
         $errors = [];
         $old = [];
 
-        if (
-            $_SERVER['REQUEST_METHOD']
-            === 'POST'
-        ) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $old = $_POST;
 
-            if (
-                !$request->validate($_POST)
-            ) {
-
-                $errors =
-                    $request->errors();
-
+            if (!$request->validate($_POST)) {
+                $errors = $request->errors();
             } else {
 
-                $result =
-                    $this->userService
-                    ->login($_POST);
+                $dto = $request->toDTO($_POST);
 
-                if (
-                    $result['success']
-                ) {
+                $result = $this->userService->login($dto);
 
-                    $_SESSION['user'] =
-                        $result['user'];
+                if ($result->isSuccess()) {
 
-                    header(
-                        "Location:index.php?page=home"
-                    );
+                    $_SESSION['user'] = $result->user()->toArray();
 
+                    header("Location: index.php?page=home");
                     exit;
                 }
 
-                $errors =
-                    $result['errors']
-                    ?? [];
+                $errors = $result->errors();
             }
         }
 
-        require BASE_PATH
-            . '/view/user/login.php';
+        require BASE_PATH . '/view/user/login.php';
     }
 
     public function logout()
     {
-        $_SESSION = [];
-
+        session_unset();
         session_destroy();
 
-        header(
-            "Location:index.php?page=login"
-        );
-
+        header("Location: index.php?page=login");
         exit;
     }
 }

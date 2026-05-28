@@ -1,17 +1,5 @@
 <?php
 
-// namespace App\Model;
-
-// class User
-// {
-//     public function __construct(
-//         public ?int $id = null,
-//         public string $username = '',
-//         public string $email = '',
-//         public string $password = ''
-//     ) {}
-// }
-
 namespace App\Model;
 
 class User
@@ -19,89 +7,41 @@ class User
     private ?int $id;
     private string $username;
     private string $email;
-    private string $password;
+    private string $passwordHash;
 
     public function __construct(
-        ?int $id = null,
-        string $username = '',
-        string $email = '',
-        string $password = ''
+        ?int $id,
+        string $username,
+        string $email,
+        string $passwordHash
     ) {
         $this->id = $id;
         $this->username = $username;
         $this->email = $email;
-        $this->password = $password;
+        $this->passwordHash = $passwordHash;
     }
 
-    /*
-     Get ID
-    */
-    public function getId(): ?int
+    public function getId(): ?int { return $this->id; }
+    public function getUsername(): string { return $this->username; }
+    public function getEmail(): string { return $this->email; }
+
+    public function verifyPassword(string $password): bool
     {
-        return $this->id;
+        return password_verify($password, $this->passwordHash);
     }
 
-    /*
-     Set ID
-    */
-    public function setId(?int $id): self
+    public function getPasswordHash(): string
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->passwordHash;
     }
 
-    /*
-     Get Username
-    */
-    public function getUsername(): string
+    // SAFE OUTPUT ONLY
+    public function toArray(): array
     {
-        return $this->username;
-    }
-
-    /*
-     Set Username
-    */
-    public function setUsername(string $username): self
-    {
-        $this->username = $username;
-
-        return $this;
-    }
-
-    /*
-     Get Email
-    */
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    /*
-     Set Email
-    */
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    /*
-     Get Password
-    */
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    /*
-     Set Password
-    */
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
+        return [
+            'id' => $this->id,
+            'username' => $this->username,
+            'email' => $this->email
+        ];
     }
 }

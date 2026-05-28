@@ -2,94 +2,72 @@
 
 namespace App\Repository;
 
-use App\Contract\UserRepositoryInterface;
-
+use App\Model\User;
+use App\Mapper\UserMapper;
 use PDO;
 
 class UserRepository extends BaseRepository
-implements UserRepositoryInterface
 {
-    /*
-     * TABLE CONFIGURATION
-     */
     protected string $table = 'users';
 
-    protected string $primaryKey = 'id';
-
-
-    /*
-     * CREATE USER
-     */
-    public function createUser(
-        string $username,
-        string $email,
-        string $password
-    ): bool {
-
-        $sql = "
-            INSERT INTO users (
-                username,
-                email,
-                password
-            )
-            VALUES (
-                :username,
-                :email,
-                :password
-            )
-        ";
-
-        $stmt = $this->db->prepare($sql);
-
-        $success = $stmt->execute([
-            ':username' => $username,
-            ':email' => $email,
-            ':password' => $password
-        ]);
-
-        $stmt->closeCursor();
-
-        return $success;
+    public function __construct(
+        PDO $db,
+        private UserMapper $mapper
+    ) {
+        parent::__construct($db);
     }
 
-
-    /*
-     * FIND BY EMAIL
-     */
-    public function findByEmail(
-        string $email
-    ) {
-
-        $stmt = $this->db->prepare(
-            "
-            SELECT *
-            FROM {$this->table}
+    public function findByEmail(string $email): ?User
+    {
+        $stmt = $this->db->prepare("
+            SELECT * FROM users
             WHERE email = :email
             LIMIT 1
-            "
-        );
+        ");
 
-        $stmt->execute([
-            ':email' => $email
-        ]);
+        $stmt->execute([':email' => $email]);
 
-        $user = $stmt->fetch(
-            PDO::FETCH_ASSOC
-        );
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $stmt->closeCursor();
-
-        return $user ?: null;
+        return $data ? $this->mapper->toEntity($data) : null;
     }
 
-    /*
-     * getById()
-     * inherited from BaseRepository
-     *
-     * getAll()
-     * inherited from BaseRepository
-     *
-     * count()
-     * inherited from BaseRepository
-     */
+    public function save(User $user): bool
+    {
+        if ($user->getId() === null) {
+            return $this->insert($user);
+        }
+
+        return $this->update($user);
+    }
+
+    private function insert(User $user): bool
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO users (username, email, password)
+            VALUES (:username, :email, :password)
+        ");
+
+        return $stmt->execute([
+            ':username' => $user->getUsername(),
+            ':email' => $user->getEmail(),
+            ':password' => $user->getPasswordHash()
+        ]);
+    }
+
+    private function update(User $user): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET username = :username,
+                email = :email
+            WHERE id = :id
+        ");
+
+        return $stmt->execute([
+            ':id' => $user->getId(),
+            ':username' => $user->getUsername(),
+            ':email' => $user->getEmail()
+        ]);
+    }
 }

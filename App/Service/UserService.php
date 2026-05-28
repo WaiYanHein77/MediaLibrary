@@ -2,108 +2,45 @@
 
 namespace App\Service;
 
+use App\Repository\UserRepository;
+use App\Model\User;
+
 class UserService
 {
-    // public function register(
-    //     array $data
-    // ): array {
+    public function __construct(
+        private UserRepository $userRepository
+    ) {}
 
-    //     $username =
-    //         trim(
-    //             $data['username']
-    //         );
+    public function register($dto): Result
+    {
+        if ($this->userRepository->findByEmail($dto->email)) {
+            return new Result(false, [
+                'email' => ['Email already exists']
+            ]);
+        }
 
-    //     $email =
-    //         trim(
-    //             $data['email']
-    //         );
+        $user = new User(
+            null,
+            $dto->username,
+            $dto->email,
+            password_hash($dto->password, PASSWORD_BCRYPT)
+        );
 
-    //     $password =
-    //         password_hash(
-    //             $data['password'],
-    //             PASSWORD_DEFAULT
-    //         );
+        $this->userRepository->save($user);
 
-    //     unset($data['confirm_password']);
+        return new Result(true, [], $user);
+    }
 
-    //     // save repository later
+    public function login($dto): Result
+    {
+        $user = $this->userRepository->findByEmail($dto->email);
 
-    //     return [
-    //         'success' => true
-    //     ];
-    // }
+        if (!$user || !$user->verifyPassword($dto->password)) {
+            return new Result(false, [
+                'login' => ['Invalid credentials']
+            ]);
+        }
 
-    public function register(
-    array $data
-): array {
-
-    $username = trim($data['username']);
-
-    $email = trim($data['email']);
-
-    $password = password_hash(
-        $data['password'],
-        PASSWORD_DEFAULT
-    );
-
-    // ADD THIS
-    $_SESSION['registered_user'] = [
-        'username' => $username,
-        'email' => $email,
-        'password' => $password
-    ];
-    return [
-        'success' => true
-    ];
-}
-
-    // public function login(
-    //     array $data
-    // ): array {
-
-    //     $email =
-    //         trim(
-    //             $data['email']
-    //         );
-
-    //     $password =
-    //         $data['password'];
-
-    //     // repository search later
-
-    //     $user = [
-    //         'email' => $email
-    //     ];
-
-    //     return [
-
-    //         'success' => true,
-
-    //         'user' => $user
-
-    //     ];
-    // }
-
-
-    public function login(
-    array $data
-): array {
-
-    $email = trim($data['email']);
-    $password = $data['password'];
-
-    // temporary example
-    $user = [
-        'username' => $_SESSION['registered_user']['username'] ?? '',
-        'email' => $email
-    ];
-
-    return [
-
-        'success' => true,
-
-        'user' => $user
-
-    ];
-}
+        return new Result(true, [], $user);
+    }
 }

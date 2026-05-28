@@ -8,27 +8,20 @@ abstract class FormRequest
 {
     protected Validator $validator;
 
-    public function __construct()
+    public function __construct(Validator $validator)
     {
-        $this->validator = new Validator();
+        $this->validator = $validator;
     }
 
     abstract public function rules(): array;
 
-    public function validate(
-        array $data
-    ): bool {
-
-        return $this->validator
-            ->validate(
-                $data,
-                $this->rules()
-            );
+    public function validate(array $data): bool
+    {
+        return $this->validator->validate($data, $this->rules());
     }
 
     public function errors(): array
     {
-        return $this->validator
-            ->errors();
+        return $this->validator->errors();
     }
 }

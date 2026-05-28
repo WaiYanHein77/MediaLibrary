@@ -1,37 +1,42 @@
 <?php
 
 namespace App\Request;
-use App\Request\FormRequest;
+
+use App\DTO\RegisterDTO;
 
 class RegisterRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-
             'username' => [
                 'required' => true,
                 'min' => 3,
                 'max' => 100
             ],
-
             'email' => [
                 'required' => true,
                 'email' => true,
                 'max' => 150
             ],
-
             'password' => [
                 'required' => true,
                 'min' => 6,
                 'max' => 255
             ],
-
             'confirm_password' => [
                 'required' => true,
                 'same' => 'password'
             ]
-
         ];
+    }
+
+    public function toDTO(array $data): RegisterDTO
+    {
+        return new RegisterDTO(
+            $data['username'],
+            $data['email'],
+            $data['password']
+        );
     }
 }

@@ -17,6 +17,7 @@ use App\Repository\UserRepository;
 use App\Service\Validator;
 use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
+use App\Mapper\UserMapper;
 /* =========================
    ENV
 ========================= */
@@ -38,7 +39,9 @@ $catalogService = new CatalogService();
 $formatService  = new FormatService();
 
 $validator = new Validator();
-$userRepo    = new UserRepository($db);
+$userMapper = new UserMapper(); // ✅ ADD THIS
+
+$userRepo = new UserRepository($db, $userMapper); // ✅ FIXED
 $userService = new UserService($userRepo, $validator);
 /* =========================
    LOAD ROUTES
@@ -94,10 +97,10 @@ if (isset($routes[$page])) {
         $request = match ($method) {
 
             'register' =>
-            new RegisterRequest(),
+            new RegisterRequest($validator),
 
             'login' =>
-            new LoginRequest(),
+            new LoginRequest($validator),
 
             default => null
         };
