@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Response\ApiResponse;
 use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
 use App\Service\UserService;
@@ -57,12 +58,11 @@ class UserController
 
                 if ($result->isSuccess()) {
 
-                    $_SESSION['user'] = $result->user()->toArray();
+                    $_SESSION['user'] = $result->data()->toArray();
 
                     header("Location: index.php?page=home");
                     exit;
                 }
-
                 $errors = $result->errors();
             }
         }

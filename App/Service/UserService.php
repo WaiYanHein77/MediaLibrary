@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Mapper\UserResponseMapper;
 use App\Repository\UserRepository;
 use App\Model\User;
 
@@ -28,7 +29,13 @@ class UserService
 
         $this->userRepository->save($user);
 
-        return new Result(true, [], $user);
+        $responseDTO = UserResponseMapper::toDTO($user);
+
+        return new Result(
+            true,
+            [],
+            $responseDTO
+        );
     }
 
     public function login($dto): Result
@@ -41,6 +48,12 @@ class UserService
             ]);
         }
 
-        return new Result(true, [], $user);
+        $responseDTO = UserResponseMapper::toDTO($user);
+
+        return new Result(
+            true,
+            [],
+            $responseDTO
+        );
     }
 }

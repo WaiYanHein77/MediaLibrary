@@ -4,7 +4,7 @@ require BASE_PATH . '/view/layout/header.php';
 ?>
 <?php $errors = $errors ?? []; ?>
 
-<form method="POST" class="auth-form">
+<form method="POST" class="auth-form" novalidate>
 
     <h2>Register</h2>
 

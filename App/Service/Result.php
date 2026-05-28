@@ -2,8 +2,6 @@
 
 namespace App\Service;
 
-use App\Model\User;
-
 class Result
 {
     public function __construct(
@@ -12,12 +10,18 @@ class Result
         private mixed $data = null
     ) {}
 
-    public function isSuccess(): bool { return $this->success; }
-    public function errors(): array { return $this->errors; }
-    public function data(): mixed { return $this->data; }
-
-    public function user(): ?User
+    public function isSuccess(): bool
     {
-        return $this->data instanceof User ? $this->data : null;
+        return $this->success;
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
+    }
+
+    public function data(): mixed
+    {
+        return $this->data;
     }
 }
