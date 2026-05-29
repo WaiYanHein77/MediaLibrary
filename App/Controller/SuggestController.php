@@ -3,149 +3,50 @@
 namespace App\Controller;
 
 use App\Service\FormatService;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use App\Service\SuggestService;
+use App\Request\SuggestRequest;
 
 class SuggestController extends BaseController
 {
-    private FormatService $formatService;
+    public function __construct(
+        private FormatService $formatService,
+        private SuggestService $suggestService
+    ) {}
 
-    public function __construct(FormatService $formatService)
+    public function index(SuggestRequest $request)
     {
-        $this->formatService = $formatService;
-    }
+        return $this->form(
+            $request,
 
-    /**
-     * Show suggestion form
-     */
-    public function index(): void
-    {
-        $data = [
-            'pageTitle' => 'Suggest a media item',
-            'section'   => 'suggest',
-            'hideSearch' => true,
+            // SERVICE CALL
+            fn($dto) => $this->suggestService->send($dto),
 
-            // default form values
-            'name' => null,
-            'email' => null,
-            'category' => null,
-            'title' => null,
-            'format' => null,
-            'genre' => null,
-            'year' => null,
-            'details' => null,
-            'error_message' => null
-        ];
+            // VIEW
+            'suggest',
 
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $result = $this->handleForm();
+            // SUCCESS REDIRECT
+            'index.php?page=suggest&status=thanks',
 
-            // merge POST result into view data
-            $data = array_merge($data, $result);
-        }
+            // VIEW DATA
+            [
+                'pageTitle' => 'Suggest a media item',
+                'section' => 'suggest',
+                'hideSearch' => true,
 
-        // dropdown data
-        $data['categories'] = $this->formatService->category_drop_down();
-        $data['formats']    = $this->formatService->format_array();
-        $data['genres']     = $this->formatService->genres_array();
+                'categories' => $this->formatService->category_drop_down(),
+                'formats' => $this->formatService->format_array(),
+                'genres' => $this->formatService->genres_array(),
 
-        $this->render('suggest', $data);
-    }
-
-    /**
-     * Handle form submission + email sending
-     */
-    private function handleForm(): array
-    {
-        $data = [
-            'name' => trim(filter_input(INPUT_POST, "name", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'email' => trim(filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL)),
-            'category' => trim(filter_input(INPUT_POST, "category", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'title' => trim(filter_input(INPUT_POST, "title", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'format' => trim(filter_input(INPUT_POST, "format", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'genre' => trim(filter_input(INPUT_POST, "genre", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'year' => trim(filter_input(INPUT_POST, "year", FILTER_SANITIZE_NUMBER_INT)),
-            'details' => trim(filter_input(INPUT_POST, "details", FILTER_SANITIZE_SPECIAL_CHARS)),
-            'error_message' => null
-        ];
-
-        // required fields
-        if (
-            empty($data['name']) ||
-            empty($data['email']) ||
-            empty($data['category']) ||
-            empty($data['title'])
-        ) {
-            $data['error_message'] =
-                "Please fill in the required fields: Name, Email, Category and Title";
-
-            return $data;
-        }
-
-        // honeypot
-        if (!empty($_POST['address'])) {
-            $data['error_message'] = "Bad form input";
-            return $data;
-        }
-
-        // email validation
-        if (!PHPMailer::validateAddress($data['email'])) {
-            $data['error_message'] = "Invalid email address";
-            return $data;
-        }
-        /* SEND EMAIL */
-
-        // Build email message body
-        $email_body  = "Name: {$data['name']}\n";
-        $email_body .= "Email: {$data['email']}\n\n";
-        $email_body .= "Category: {$data['category']}\n";
-        $email_body .= "Title: {$data['title']}\n";
-        $email_body .= "Format: {$data['format']}\n";
-        $email_body .= "Genre: {$data['genre']}\n";
-        $email_body .= "Year: {$data['year']}\n";
-        $email_body .= "Details:\n{$data['details']}\n";
-
-        // Configure PHPMailer
-        $mail = new PHPMailer(true);
-
-        $mail->isSMTP();
-        $mail->Host       = $_ENV['MAIL_HOST'];
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $_ENV['MAIL_USERNAME'];
-        $mail->Password   = $_ENV['MAIL_PASSWORD'];
-
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-
-        $mail->SMTPOptions = [
-            'ssl' => [
-                'verify_peer'       => false,
-                'verify_peer_name'  => false,
-                'allow_self_signed' => true,
-            ],
-        ];
-
-        $mail->Username = $_ENV['MAIL_USERNAME'];
-        $mail->Password = $_ENV['MAIL_PASSWORD'];
-
-        // Set sender and receiver
-        $mail->setFrom($_ENV['MAIL_FROM_EMAIL'], $_ENV['MAIL_FROM_NAME']);
-        $mail->addReplyTo($data['email'], $data['name']);
-        $mail->addAddress($_ENV['MAIL_FROM_EMAIL']);
-
-        // Set email content
-        $mail->Subject = 'Library Suggestion from: ' . $data['name'];
-        $mail->Body    = $email_body;
-
-        // Send email and redirect on success
-        if ($mail->send()) {
-            header("Location: index.php?page=suggest&status=thanks");
-            exit;
-        }
-
-        // Return mail error if sending fails
-        $data['error_message'] = 'Mailer Error: ' . $mail->ErrorInfo;
-
-        return $data;
+                // default form values
+                'name' => null,
+                'email' => null,
+                'category' => null,
+                'title' => null,
+                'format' => null,
+                'genre' => null,
+                'year' => null,
+                'details' => null
+            ]
+        );
     }
 }

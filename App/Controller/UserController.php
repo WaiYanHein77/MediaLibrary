@@ -2,12 +2,11 @@
 
 namespace App\Controller;
 
-use App\Response\ApiResponse;
 use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
 use App\Service\UserService;
 
-class UserController
+class UserController extends BaseController
 {
     public function __construct(
         private UserService $userService
@@ -15,67 +14,33 @@ class UserController
 
     public function register(RegisterRequest $request)
     {
-        $errors = [];
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            if (!$request->validate($_POST)) {
-                $errors = $request->errors();
-            } else {
-
-                $dto = $request->toDTO($_POST);
-
-                $result = $this->userService->register($dto);
-
-                if ($result->isSuccess()) {
-                    header("Location: index.php?page=login");
-                    exit;
-                }
-
-                $errors = $result->errors();
-            }
-        }
-
-        require BASE_PATH . '/view/user/register.php';
+        return $this->form(
+            $request,
+            fn($dto) => $this->userService->register($dto),
+            'user/register',
+            'index.php?page=login',
+            ['pageTitle' => 'Register']
+        );
     }
 
     public function login(LoginRequest $request)
     {
-        $errors = [];
-        $old = [];
-
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-            $old = $_POST;
-
-            if (!$request->validate($_POST)) {
-                $errors = $request->errors();
-            } else {
-
-                $dto = $request->toDTO($_POST);
-
-                $result = $this->userService->login($dto);
-
-                if ($result->isSuccess()) {
-
-                    $_SESSION['user'] = $result->data()->toArray();
-
-                    header("Location: index.php?page=home");
-                    exit;
-                }
-                $errors = $result->errors();
+        return $this->form(
+            $request,
+            fn($dto) => $this->userService->login($dto),
+            'user/login',
+            'index.php?page=home',
+            ['pageTitle' => 'Login'],
+            function ($result) {
+                $_SESSION['user'] = $result->data()->toArray();
             }
-        }
-
-        require BASE_PATH . '/view/user/login.php';
+        );
     }
 
     public function logout()
     {
         session_unset();
         session_destroy();
-
-        header("Location: index.php?page=login");
-        exit;
+        $this->redirect('index.php?page=login');
     }
 }

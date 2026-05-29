@@ -13,119 +13,111 @@ use App\Inc\Database;
 use App\Service\CatalogService;
 use App\Service\FormatService;
 use App\Service\UserService;
+use App\Service\SuggestService;
 use App\Repository\UserRepository;
 use App\Service\Validator;
 use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
+use App\Request\SuggestRequest;
 use App\Mapper\UserMapper;
+
 /* =========================
    ENV
 ========================= */
-
 $dotenv = Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
 
 /* =========================
    DB
 ========================= */
-
 $db = Database::getConnection();
 
 /* =========================
    SERVICES
 ========================= */
-
 $catalogService = new CatalogService();
 $formatService  = new FormatService();
+$suggestService = new SuggestService();
 
 $validator = new Validator();
-$userMapper = new UserMapper(); // ✅ ADD THIS
+$userMapper = new UserMapper();
 
-$userRepo = new UserRepository($db, $userMapper); // ✅ FIXED
+$userRepo = new UserRepository($db, $userMapper);
 $userService = new UserService($userRepo, $validator);
-/* =========================
-   LOAD ROUTES
-========================= */
 
+/* =========================
+   ROUTES
+========================= */
 $webRoutes = require BASE_PATH . '/routes/web.php';
 $apiRoutes = require BASE_PATH . '/routes/api.php';
 
 $routes = $webRoutes + $apiRoutes;
 
-/* =========================
-   DISPATCH
-========================= */
-
 $page = $_GET['page'] ?? 'home';
 
+if (!isset($routes[$page])) {
 
-if (isset($routes[$page])) {
+    http_response_code(404);
 
-    [$controllerClass, $method] = $routes[$page];
-
-    // inject correct service automatically
-    $service = match ($controllerClass) {
-        App\Controller\CatalogController::class,
-        App\Controller\Api\ApiCatalogController::class
-        => $catalogService,
-
-        App\Controller\DetailsController::class,
-        App\Controller\Api\ApiDetailsController::class
-        => $catalogService,
-
-        App\Controller\SuggestController::class,
-        App\Controller\Api\ApiSuggestController::class
-        => $formatService,
-
-        App\Controller\UserController::class,
-        App\Controller\Api\ApiUserController::class
-        => $userService,
-
-        default => null
-    };
-
-    $controller = $service
-        ? new $controllerClass($service)
-        : new $controllerClass();
-
-    $request = null;
-
-    if (
-        $controllerClass === App\Controller\UserController::class
-    ) {
-
-        $request = match ($method) {
-
-            'register' =>
-            new RegisterRequest($validator),
-
-            'login' =>
-            new LoginRequest($validator),
-
-            default => null
-        };
-    }
-
-    if ($request) {
-
-        $controller->$method(
-            $request
-        );
-    } else {
-
-        $controller->$method();
-    }
-
+    echo json_encode([
+        'success' => false,
+        'message' => 'Route not found'
+    ]);
     exit;
 }
 
+[$controllerClass, $method] = $routes[$page];
+
 /* =========================
-   404
+   CONTROLLER FACTORY
 ========================= */
+$controller = match ($controllerClass) {
 
-http_response_code(404);
+    // Catalog
+    App\Controller\CatalogController::class,
+    App\Controller\Api\ApiCatalogController::class
+        => new $controllerClass($catalogService),
 
-echo json_encode([
-    'success' => false,
-    'message' => 'Route not found'
-]);
+    // Details
+    App\Controller\DetailsController::class,
+    App\Controller\Api\ApiDetailsController::class
+        => new $controllerClass($catalogService),
+
+    // User
+    App\Controller\UserController::class,
+    App\Controller\Api\ApiUserController::class
+        => new $controllerClass($userService),
+
+    // Suggest
+    App\Controller\SuggestController::class,
+    App\Controller\Api\ApiSuggestController::class
+        => new $controllerClass($formatService, $suggestService),
+
+    default => new $controllerClass()
+};
+
+/* =========================
+   REQUEST FACTORY (FIXED)
+========================= */
+$request = match ($controllerClass . '::' . $method) {
+
+    App\Controller\UserController::class . '::register'
+        => new RegisterRequest($validator),
+
+    App\Controller\UserController::class . '::login'
+        => new LoginRequest($validator),
+
+    App\Controller\SuggestController::class . '::index'
+        => new SuggestRequest($validator),
+
+    default => null
+};
+
+/* =========================
+   EXECUTE CONTROLLER
+========================= */
+if ($request) {
+    $controller->$method($request);
+} else {
+    $controller->$method();
+}

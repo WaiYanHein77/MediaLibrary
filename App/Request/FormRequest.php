@@ -13,6 +13,9 @@ abstract class FormRequest
         $this->validator = $validator;
     }
 
+       // 🔥 ADD THIS (force all requests to implement it)
+    abstract public function toDTO(array $data): mixed;
+
     abstract public function rules(): array;
 
     public function validate(array $data): bool
