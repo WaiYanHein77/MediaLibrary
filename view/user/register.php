@@ -1,72 +1,48 @@
 <?php
 $section = 'register';
 require BASE_PATH . '/view/layout/header.php';
-?>
-<?php $errors = $errors ?? []; ?>
 
-<form method="POST" class="auth-form" novalidate>
+$errors = $errors ?? [];
+$old = $old ?? [];
+?>
+
+<form method="POST" class="auth-form">
 
     <h2>Register</h2>
 
-    <!-- Username -->
     <div class="form-group">
         <label>Username</label>
         <input type="text" name="username"
-            value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
-            placeholder="Choose username">
-
-        <?php if (!empty($errors['username'])): ?>
-            <small class="error">
-                <?= implode('<br>', $errors['username']) ?>
-            </small>
-        <?php endif; ?>
+               value="<?= $helper->old($old, 'username') ?>">
+        <?= $helper->error('username', $errors) ?>
     </div>
 
-    <!-- Email -->
     <div class="form-group">
         <label>Email</label>
         <input type="email" name="email"
-            value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-            placeholder="Enter email">
-
-        <?php if (!empty($errors['email'])): ?>
-            <small class="error">
-                <?= implode('<br>', $errors['email']) ?>
-            </small>
-        <?php endif; ?>
+               value="<?= $helper->old($old, 'email') ?>">
+        <?= $helper->error('email', $errors) ?>
     </div>
 
-    <!-- Password -->
     <div class="form-group">
         <label>Password</label>
-        <input type="password" name="password"
-            placeholder="Create password">
-
-        <?php if (!empty($errors['password'])): ?>
-            <small class="error">
-                <?= implode('<br>', $errors['password']) ?>
-            </small>
-        <?php endif; ?>
+        <input type="password" name="password">
+        <?= $helper->error('password', $errors) ?>
     </div>
 
-     <!-- Confirm Password -->
     <div class="form-group">
         <label>Confirm Password</label>
-        <input type="password" name="confirm_password"
-            placeholder="Confirm password">
-
-        <?php if (!empty($errors['confirm_password'])): ?>
-            <small class="error">
-                <?= implode('<br>', $errors['confirm_password']) ?>
-            </small>
-        <?php endif; ?>
+        <input type="password" name="confirm_password">
+        <?= $helper->error('confirm_password', $errors) ?>
     </div>
 
     <button type="submit">Create Account</button>
 
     <p class="auth-link">
         Already have an account?
-        <a href="index.php?page=login">Login</a>
+        <a href="<?= BASE_URL ?>/Public/index.php?page=login">
+            Sign in
+        </a>
     </p>
 
 </form>

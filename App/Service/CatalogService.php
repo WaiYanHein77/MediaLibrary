@@ -57,18 +57,23 @@ class CatalogService
         ];
     }
 
-    /* ================= CATEGORY ================= */
     private function getCategory(array $queryParams): ?string
     {
         $category = $queryParams['cat'] ?? null;
 
-        if ($category && in_array($category, self::ALLOWED_CATEGORIES, true)) {
-            return $category;
+        if ($category === null) {
+            return null;
         }
 
-        return null;
-    }
+        // ❌ INVALID CATEGORY → THROW REAL EXCEPTION
+        if (!in_array($category, self::ALLOWED_CATEGORIES, true)) {
+            throw new \App\Exception\ValidationException([
+                'cat' => ['Invalid category selected']
+            ]);
+        }
 
+        return $category;
+    }
     /* ================= SEARCH ================= */
     private function getSearchTerm(array $queryParams): ?string
     {
@@ -152,6 +157,20 @@ class CatalogService
     /* ================= SINGLE ITEM ================= */
     public function single_item_array(int $id): ?array
     {
-        return $this->repo->getById($id);
+        // 🔥 DYNAMIC TEST: invalid ID
+        if ($id <= 0) {
+            throw new \App\Exception\ValidationException([
+                'id' => ['Invalid item ID']
+            ]);
+        }
+
+        $item = $this->repo->getById($id);
+
+        // 🔥 REAL DOMAIN RULE
+        if (!$item) {
+            throw new \App\Exception\NotFoundException('Item not found');
+        }
+
+        return $item;
     }
 }

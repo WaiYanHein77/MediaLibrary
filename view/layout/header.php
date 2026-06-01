@@ -7,12 +7,14 @@
 
     <link rel="stylesheet" href="<?= BASE_URL ?>/css/style.css">
 
-    <?php if (isset($section) && $section === 'login'): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/css/login.css">
+    <?php if (!empty($section)): ?>
+        <?php $authPages = ['login', 'register']; ?>
 
-    <?php elseif (isset($section) && $section === 'register'): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/css/register.css">
+        <?php if (in_array($section, $authPages)): ?>
+            <link rel="stylesheet" href="<?= BASE_URL ?>/css/auth.css">
+        <?php endif; ?>
     <?php endif; ?>
+
 </head>
 
 <body>
@@ -57,7 +59,7 @@
                             </a>
                         </li>
 
-                        <?php if (!empty($_SESSION['user']) && !empty($_SESSION['user']['username'])): ?>
+                        <?php if (!empty($_SESSION['user'])): ?>
 
                             <li>
                                 <a href="#">
@@ -74,15 +76,11 @@
                         <?php else: ?>
 
                             <li class="<?= ($section === 'login') ? 'on' : '' ?>">
-                                <a href="<?= BASE_URL ?>/Public/index.php?page=login">
-                                    Login
-                                </a>
+                                <a href="<?= BASE_URL ?>/Public/index.php?page=login">Login</a>
                             </li>
 
                             <li class="<?= ($section === 'register') ? 'on' : '' ?>">
-                                <a href="<?= BASE_URL ?>/Public/index.php?page=register">
-                                    Register
-                                </a>
+                                <a href="<?= BASE_URL ?>/Public/index.php?page=register">Register</a>
                             </li>
 
                         <?php endif; ?>
@@ -91,30 +89,24 @@
 
                 </div>
             </header>
-            <?php if (isset($_SESSION['user'])): ?>
 
-
-
-            <?php else: ?>
-
-
-
-            <?php endif; ?>
             <!-- SEARCH BAR -->
             <?php if (empty($hideSearch)): ?>
                 <div class="search">
                     <div class="wrapper">
+
                         <form method="get" action="<?= BASE_URL ?>/Public/index.php">
                             <input type="hidden" name="page" value="catalog">
 
-                            <?php if (!empty($section)): ?>
-                                <input type="hidden" name="cat" value="<?= htmlspecialchars($section) ?>">
+                            <?php if (!empty($_GET['cat'])): ?>
+                                <input type="hidden" name="cat" value="<?= htmlspecialchars($_GET['cat']) ?>">
                             <?php endif; ?>
 
                             <label for="s">Search:</label>
                             <input type="text" name="s" id="s">
                             <input type="submit" value="Go">
                         </form>
+
                     </div>
                 </div>
             <?php endif; ?>

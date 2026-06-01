@@ -20,21 +20,26 @@ use App\Request\RegisterRequest;
 use App\Request\LoginRequest;
 use App\Request\SuggestRequest;
 use App\Mapper\UserMapper;
+use App\Core\ErrorHandler;
 
-/* =========================
+ErrorHandler::register();
+
+
+
+/* ======================================================
    ENV
-========================= */
+====================================================== */
 $dotenv = Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
 
-/* =========================
+/* ======================================================
    DB
-========================= */
+====================================================== */
 $db = Database::getConnection();
 
-/* =========================
+/* ======================================================
    SERVICES
-========================= */
+====================================================== */
 $catalogService = new CatalogService();
 $formatService  = new FormatService();
 $suggestService = new SuggestService();
@@ -43,11 +48,11 @@ $validator = new Validator();
 $userMapper = new UserMapper();
 
 $userRepo = new UserRepository($db, $userMapper);
-$userService = new UserService($userRepo, $validator);
+$userService = new UserService($userRepo);
 
-/* =========================
+/* ======================================================
    ROUTES
-========================= */
+====================================================== */
 $webRoutes = require BASE_PATH . '/routes/web.php';
 $apiRoutes = require BASE_PATH . '/routes/api.php';
 
@@ -59,36 +64,30 @@ if (!isset($routes[$page])) {
 
     http_response_code(404);
 
-    echo json_encode([
-        'success' => false,
-        'message' => 'Route not found'
-    ]);
-    exit;
+$message = "Route not found";
+require BASE_PATH . '/view/errors/404.php';
+exit;
 }
 
 [$controllerClass, $method] = $routes[$page];
 
-/* =========================
+/* ======================================================
    CONTROLLER FACTORY
-========================= */
+====================================================== */
 $controller = match ($controllerClass) {
 
-    // Catalog
     App\Controller\CatalogController::class,
     App\Controller\Api\ApiCatalogController::class
         => new $controllerClass($catalogService),
 
-    // Details
     App\Controller\DetailsController::class,
     App\Controller\Api\ApiDetailsController::class
         => new $controllerClass($catalogService),
 
-    // User
     App\Controller\UserController::class,
     App\Controller\Api\ApiUserController::class
         => new $controllerClass($userService),
 
-    // Suggest
     App\Controller\SuggestController::class,
     App\Controller\Api\ApiSuggestController::class
         => new $controllerClass($formatService, $suggestService),
@@ -96,9 +95,9 @@ $controller = match ($controllerClass) {
     default => new $controllerClass()
 };
 
-/* =========================
-   REQUEST FACTORY (FIXED)
-========================= */
+/* ======================================================
+   REQUEST FACTORY
+====================================================== */
 $request = match ($controllerClass . '::' . $method) {
 
     App\Controller\UserController::class . '::register'
@@ -113,9 +112,9 @@ $request = match ($controllerClass . '::' . $method) {
     default => null
 };
 
-/* =========================
+/* ======================================================
    EXECUTE CONTROLLER
-========================= */
+====================================================== */
 if ($request) {
     $controller->$method($request);
 } else {

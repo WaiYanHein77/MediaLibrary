@@ -8,7 +8,12 @@ abstract class BaseController
 {
     protected function render(string $view, array $data = []): void
     {
-        extract($data);
+        $helper = new \App\Helper\ViewHelper();
+
+        foreach ($data as $key => $value) {
+            $$key = $value;
+        }
+
         require BASE_PATH . "/view/{$view}.php";
     }
 
@@ -23,9 +28,6 @@ abstract class BaseController
         return filter_input($type, $name, $filter);
     }
 
-    /**
-     * 🔥 UNIVERSAL FORM HANDLER (NO DUPLICATION ANYMORE)
-     */
     protected function form(
         FormRequest $request,
         callable $action,
@@ -35,39 +37,34 @@ abstract class BaseController
         ?callable $onSuccess = null
     ) {
         $errors = [];
-        $old = [];
+        $old = $_POST ?? [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $old = $_POST;
 
-            // 1. Validate
+            // 1. Validate request
             if (!$request->validate($_POST)) {
                 $errors = $request->errors();
             } else {
 
-                // 2. DTO
+                // 2. Convert to DTO
                 $dto = $request->toDTO($_POST);
 
-                // 3. Service call
+                // 3. Execute business logic (global errors handled outside)
                 $result = $action($dto);
 
-                // 4. Success
-                if ($result->isSuccess()) {
-
-                    if ($onSuccess) {
-                        $onSuccess($result);
-                    }
-
-                    $this->redirect($successRedirect);
+                // 4. Optional hook
+                if ($onSuccess) {
+                    $onSuccess($result);
                 }
 
-                // 5. Service errors
-                $errors = $result->errors();
+                // 5. Redirect on success
+                $this->redirect($successRedirect);
             }
         }
 
-        // 6. Render
+        // 6. Render view with errors + old input
         $this->render($view, array_merge($viewData, [
             'errors' => $errors,
             'old' => $old

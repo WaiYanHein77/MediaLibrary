@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Exception\ValidationException;
+use App\Exception\AuthenticationException;
 use App\Mapper\UserResponseMapper;
 use App\Repository\UserRepository;
 use App\Model\User;
@@ -12,10 +14,11 @@ class UserService
         private UserRepository $userRepository
     ) {}
 
-    public function register($dto): Result
+    public function register($dto)
     {
+        // Business rule: email must be unique
         if ($this->userRepository->findByEmail($dto->email)) {
-            return new Result(false, [
+            throw new ValidationException([
                 'email' => ['Email already exists']
             ]);
         }
@@ -29,31 +32,17 @@ class UserService
 
         $this->userRepository->save($user);
 
-        $responseDTO = UserResponseMapper::toDTO($user);
-
-        return new Result(
-            true,
-            [],
-            $responseDTO
-        );
+        return UserResponseMapper::toDTO($user);
     }
 
-    public function login($dto): Result
+    public function login($dto)
     {
         $user = $this->userRepository->findByEmail($dto->email);
 
         if (!$user || !$user->verifyPassword($dto->password)) {
-            return new Result(false, [
-                'login' => ['Invalid credentials']
-            ]);
+            throw new AuthenticationException("Invalid credentials");
         }
 
-        $responseDTO = UserResponseMapper::toDTO($user);
-
-        return new Result(
-            true,
-            [],
-            $responseDTO
-        );
+        return UserResponseMapper::toDTO($user);
     }
 }

@@ -23,17 +23,26 @@ class UserController extends BaseController
         );
     }
 
+    public function testException()
+{echo "CONTROLLER REACHED";
+    exit;
+}
+
     public function login(LoginRequest $request)
     {
         return $this->form(
             $request,
-            fn($dto) => $this->userService->login($dto),
+            function ($dto) {
+                $user = $this->userService->login($dto);
+                $_SESSION['user'] = $user->toArray();
+                return $user;
+            },
             'user/login',
             'index.php?page=home',
-            ['pageTitle' => 'Login'],
-            function ($result) {
-                $_SESSION['user'] = $result->data()->toArray();
-            }
+            [
+                'pageTitle' => 'Login',
+                'page' => 'login'
+            ]
         );
     }
 
